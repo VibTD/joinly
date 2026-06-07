@@ -27,6 +27,7 @@ export function AppProvider({ children }) {
   const [isCreateOpen, setCreateOpen] = useState(false);
   const [profile, setProfile] = useState(initialUser);
   const [selectedEventId, setSelectedEventId] = useState(null);
+  const [leaveEventId, setLeaveEventId] = useState(null);
   const [events, setEvents] = useState(initialEvents);
   const [joinedEventIds, setJoinedEventIds] = useState(initialJoinedEventIds);
   const [completedChallengeIds, setCompletedChallengeIds] = useState(
@@ -69,7 +70,10 @@ export function AppProvider({ children }) {
         name: data.name.trim(),
         description: (data.description || '').trim(),
         location: data.location.trim(),
+        lat: typeof data.lat === 'number' ? data.lat : null,
+        lng: typeof data.lng === 'number' ? data.lng : null,
         date: formatEventDate(data.date, data.time),
+        dateTime: data.date ? `${data.date}T${data.time || '00:00'}` : null,
         category: data.category,
         participants: 1,
         maxParticipants: data.maxParticipants
@@ -95,6 +99,15 @@ export function AppProvider({ children }) {
     const updateProfile = (data) =>
       setProfile((prev) => ({ ...prev, ...data }));
 
+    // Bestätigungsdialog vor dem Austreten — "Verlassen"/"Dabei entfernen" öffnet
+    // ihn nur, das eigentliche Entfernen passiert erst nach "Austreten".
+    const requestLeave = (eventId) => setLeaveEventId(eventId);
+    const cancelLeave = () => setLeaveEventId(null);
+    const confirmLeave = () => {
+      if (leaveEventId) toggleJoin(leaveEventId);
+      setLeaveEventId(null);
+    };
+
     return {
       events,
       eventsById,
@@ -119,6 +132,10 @@ export function AppProvider({ children }) {
       selectedEvent: selectedEventId ? eventsById[selectedEventId] : null,
       openEventDetail: (eventId) => setSelectedEventId(eventId),
       closeEventDetail: () => setSelectedEventId(null),
+      leaveEvent: leaveEventId ? eventsById[leaveEventId] : null,
+      requestLeave,
+      cancelLeave,
+      confirmLeave,
     };
   }, [
     events,
@@ -129,6 +146,7 @@ export function AppProvider({ children }) {
     isCreateOpen,
     profile,
     selectedEventId,
+    leaveEventId,
   ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

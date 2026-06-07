@@ -1,11 +1,54 @@
+import { useMemo, useState } from 'react';
 import { useApp } from '../context/useApp.js';
 import ImagePlaceholder from '../components/ImagePlaceholder.jsx';
 import CategoryBadge from '../components/CategoryBadge.jsx';
 import ProgressBar from '../components/ProgressBar.jsx';
 import { CheckIcon } from '../components/Icons.jsx';
 
+const todayStr = new Date().toISOString().slice(0, 10);
+const isToday = (event) =>
+  typeof event.dateTime === 'string' && event.dateTime.slice(0, 10) === todayStr;
+
+// Eine Zeile in den kompakten Challenge-Listen (Veranstalter & Freunde) — Toggle
+// links, Aufgabe + Meta-Zeile rechts, durchgestrichen sobald erledigt/angenommen.
+function MiniChallengeRow({ done, onToggle, label, task, meta }) {
+  return (
+    <li className="mini-challenge">
+      <button
+        type="button"
+        className={`checkbox-btn${done ? ' checkbox-btn--checked' : ''}`}
+        onClick={onToggle}
+        aria-pressed={done}
+        aria-label={done ? `${label} als offen markieren` : `${label} als erledigt markieren`}
+      >
+        {done && <CheckIcon width={14} height={14} />}
+      </button>
+      <div className="mini-challenge__body">
+        <p className={`mini-challenge__task${done ? ' mini-challenge__task--done' : ''}`}>
+          {task}
+        </p>
+        {meta}
+      </div>
+    </li>
+  );
+}
+
 export default function MyEvents() {
-  const { joinedEvents, isCompleted, toggleChallenge, openEventDetail } = useApp();
+  const {
+    joinedEvents,
+    isCompleted,
+    toggleChallenge,
+    openEventDetail,
+    requestLeave,
+    friendChallenges,
+    respondToFriendChallenge,
+  } = useApp();
+  const [filter, setFilter] = useState('all');
+
+  const visibleEvents = useMemo(
+    () => (filter === 'today' ? joinedEvents.filter(isToday) : joinedEvents),
+    [joinedEvents, filter]
+  );
 
   return (
     <div className="app-main">
@@ -17,18 +60,49 @@ export default function MyEvents() {
         </p>
       </header>
 
-      {joinedEvents.length === 0 ? (
+      <div className="toggle-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={filter === 'today'}
+          className={`toggle-tab${filter === 'today' ? ' toggle-tab--active' : ''}`}
+          onClick={() => setFilter('today')}
+        >
+          Heute
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={filter === 'all'}
+          className={`toggle-tab${filter === 'all' ? ' toggle-tab--active' : ''}`}
+          onClick={() => setFilter('all')}
+        >
+          Alle
+        </button>
+      </div>
+
+      {visibleEvents.length === 0 ? (
         <div className="empty">
-          <div className="empty__emoji">🗓️</div>
-          <p className="empty__title">Noch keine Events</p>
+          <div className="empty__emoji">{filter === 'today' ? '☀️' : '🗓️'}</div>
+          <p className="empty__title">
+            {filter === 'today' ? 'Heute nichts geplant' : 'Noch keine Events'}
+          </p>
           <p className="empty__text">
-            Tippe bei einem Event auf „Dabei sein“ und es erscheint hier.
+            {filter === 'today'
+              ? 'Keins deiner Events findet heute statt — schau später wieder vorbei.'
+              : 'Tippe bei einem Event auf „Dabei sein“ und es erscheint hier.'}
           </p>
         </div>
       ) : (
-        joinedEvents.map((event) => {
+        visibleEvents.map((event) => {
           const total = event.challenges.length;
           const done = event.challenges.filter((c) => isCompleted(c.id)).length;
+          const eventFriendChallenges = friendChallenges.filter(
+            (c) => c.eventId === event.id
+          );
+          const acceptedFriend = eventFriendChallenges.filter(
+            (c) => c.status === 'accepted'
+          ).length;
 
           return (
             <article key={event.id} className="card my-event">
@@ -40,6 +114,7 @@ export default function MyEvents() {
               >
                 <ImagePlaceholder
                   category={event.category}
+                  image={event.image}
                   height={56}
                   emojiSize={26}
                   style={{ width: 56 }}
@@ -53,66 +128,79 @@ export default function MyEvents() {
                 </div>
               </div>
 
-              <div className="challenge-mini">
-                <div className="challenge-mini__row">
-                  <span className="challenge-mini__label">Challenges</span>
-                  <span className="challenge-mini__count">
-                    {done} / {total} erledigt
-                  </span>
-                </div>
-                <ProgressBar value={done} max={total} />
+              {total > 0 && (
+                <div className="challenge-mini">
+                  <div className="challenge-mini__row">
+                    <span className="challenge-mini__label">🎯 Veranstalter-Challenges</span>
+                    <span className="challenge-mini__count">
+                      {done} / {total} erledigt
+                    </span>
+                  </div>
+                  <ProgressBar value={done} max={total} />
 
-                <ul style={{ marginTop: 14, display: 'grid', gap: 10 }}>
-                  {event.challenges.map((c) => {
-                    const completed = isCompleted(c.id);
-                    return (
-                      <li
-                        key={c.id}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: 10,
-                        }}
-                      >
-                        <button
-                          type="button"
-                          className={`checkbox-btn${
-                            completed ? ' checkbox-btn--checked' : ''
-                          }`}
-                          onClick={() => toggleChallenge(c.id)}
-                          aria-pressed={completed}
-                          aria-label={
-                            completed
-                              ? 'Challenge als offen markieren'
-                              : 'Challenge als erledigt markieren'
+                  <ul className="mini-challenge-list">
+                    {event.challenges.map((c) => {
+                      const completed = isCompleted(c.id);
+                      return (
+                        <MiniChallengeRow
+                          key={c.id}
+                          done={completed}
+                          onToggle={() => toggleChallenge(c.id)}
+                          label="Challenge"
+                          task={c.task}
+                          meta={<span className="challenge__reward">🎁 {c.reward}</span>}
+                        />
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              {eventFriendChallenges.length > 0 && (
+                <div className="challenge-mini">
+                  <div className="challenge-mini__row">
+                    <span className="challenge-mini__label">🤝 Freundes-Challenges</span>
+                    <span className="challenge-mini__count">
+                      {acceptedFriend} / {eventFriendChallenges.length} angenommen
+                    </span>
+                  </div>
+
+                  <ul className="mini-challenge-list">
+                    {eventFriendChallenges.map((c) => {
+                      const accepted = c.status === 'accepted';
+                      return (
+                        <MiniChallengeRow
+                          key={c.id}
+                          done={accepted}
+                          onToggle={() =>
+                            respondToFriendChallenge(c.id, accepted ? 'pending' : 'accepted')
                           }
-                        >
-                          {completed && <CheckIcon width={14} height={14} />}
-                        </button>
-                        <div style={{ flex: 1 }}>
-                          <p
-                            style={{
-                              fontSize: 'var(--fs-body)',
-                              fontWeight: 500,
-                              color: completed
-                                ? 'var(--color-text-secondary)'
-                                : 'var(--color-text)',
-                              textDecoration: completed
-                                ? 'line-through'
-                                : 'none',
-                            }}
-                          >
-                            {c.task}
-                          </p>
-                          <span className="challenge__reward">
-                            🎁 {c.reward}
-                          </span>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
+                          label="Freundes-Challenge"
+                          task={c.task}
+                          meta={
+                            <div className="challenge__from">
+                              <span className="avatar-xs" aria-hidden="true">
+                                {c.fromAvatar}
+                              </span>
+                              <span className="challenge__event">
+                                Von {c.from} · 🎁 {c.reward}
+                              </span>
+                            </div>
+                          }
+                        />
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm btn--block my-event__leave"
+                onClick={() => requestLeave(event.id)}
+              >
+                Verlassen
+              </button>
             </article>
           );
         })

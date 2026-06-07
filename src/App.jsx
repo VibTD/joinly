@@ -2,6 +2,7 @@ import { AppProvider } from './context/AppContext.jsx';
 import { useApp } from './context/useApp.js';
 import BottomNav from './components/BottomNav.jsx';
 import CreateEventModal from './components/CreateEventModal.jsx';
+import LeaveEventDialog from './components/LeaveEventDialog.jsx';
 import Home from './pages/Home.jsx';
 import Discover from './pages/Discover.jsx';
 import MapPage from './pages/Map.jsx';
@@ -27,6 +28,7 @@ function Shell() {
     friendChallenges,
     isCreateOpen,
     selectedEvent,
+    leaveEvent,
   } = useApp();
 
   const Page = PAGES[activePage] ?? Home;
@@ -43,6 +45,7 @@ function Shell() {
       <BottomNav active={activePage} onNavigate={setActivePage} badges={badges} />
       {isCreateOpen && <CreateEventModal />}
       {selectedEvent && <EventDetail />}
+      {leaveEvent && <LeaveEventDialog />}
     </div>
   );
 }

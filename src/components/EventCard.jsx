@@ -5,7 +5,7 @@ import { PinIcon, UsersIcon, LockIcon } from './Icons.jsx';
 
 // Volle Event-Karte (Home-Feed): Bild, Badge, Name, Ort, Teilnehmer, Button.
 export default function EventCard({ event }) {
-  const { isJoined, toggleJoin, openEventDetail } = useApp();
+  const { isJoined, toggleJoin, openEventDetail, requestLeave } = useApp();
   const joined = isJoined(event.id);
 
   return (
@@ -17,7 +17,7 @@ export default function EventCard({ event }) {
     >
 
       <div className="event-card__media">
-        <ImagePlaceholder category={event.category} variant="top" height={180} />
+        <ImagePlaceholder category={event.category} image={event.image} variant="top" height={180} />
         <div className="event-card__badge">
           <CategoryBadge category={event.category} />
         </div>
@@ -47,7 +47,8 @@ export default function EventCard({ event }) {
             className={`btn btn--sm ${joined ? 'btn--joined' : 'btn--primary'}`}
             onClick={(e) => {
               e.stopPropagation();
-              toggleJoin(event.id);
+              if (joined) requestLeave(event.id);
+              else toggleJoin(event.id);
             }}
           >
             {joined ? '✓ Dabei' : 'Dabei sein'}

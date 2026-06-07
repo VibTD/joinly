@@ -2,11 +2,15 @@ import { useState } from 'react';
 import { useApp } from '../context/useApp.js';
 import { CATEGORIES } from '../data/dummyData.js';
 import { CloseIcon, CheckIcon, GlobeIcon, LockIcon } from './Icons.jsx';
+import LocationPicker from './LocationPicker.jsx';
+import { geocodeAddress, reverseGeocode } from '../utils/geocode.js';
 
 const EMPTY = {
   name: '',
   description: '',
   location: '',
+  lat: null,
+  lng: null,
   date: '',
   time: '',
   category: 'Weinwanderung',
@@ -21,10 +25,48 @@ export default function CreateEventModal() {
   const [touched, setTouched] = useState({});
   const [closing, setClosing] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
   const markTouched = (key) =>
     setTouched((prev) => ({ ...prev, [key]: true }));
+
+  const setCoords = (lat, lng) =>
+    setForm((prev) => ({ ...prev, lat, lng }));
+
+  // Adresstext verlassen -> Koordinaten per Nominatim suchen und Karte zentrieren.
+  const handleLocationBlur = async () => {
+    markTouched('location');
+    const query = form.location.trim();
+    if (!query) return;
+    setLocating(true);
+    try {
+      const hit = await geocodeAddress(query);
+      if (hit) setCoords(hit.lat, hit.lng);
+    } catch {
+      // Geocoding nicht erreichbar — Ort bleibt als reiner Text erhalten.
+    } finally {
+      setLocating(false);
+    }
+  };
+
+  // Karte angetippt oder Pin gezogen -> Koordinaten setzen + Adresse zurückübersetzen.
+  const handlePick = async (lat, lng) => {
+    setCoords(lat, lng);
+    setLocating(true);
+    try {
+      const address = await reverseGeocode(lat, lng);
+      if (address) {
+        setForm((prev) =>
+          prev.lat === lat && prev.lng === lng ? { ...prev, location: address } : prev
+        );
+      }
+    } catch {
+      // Reverse-Geocoding nicht erreichbar — Koordinaten bleiben trotzdem gesetzt.
+    } finally {
+      setLocating(false);
+    }
+  };
 
   const errors = {
     name: !form.name.trim(),
@@ -128,11 +170,20 @@ export default function CreateEventModal() {
               placeholder="z. B. Stadtpark, Mainz"
               value={form.location}
               onChange={(e) => set('location', e.target.value)}
-              onBlur={() => markTouched('location')}
+              onBlur={handleLocationBlur}
             />
             {touched.location && errors.location && (
               <span className="field__error">Bitte gib einen Ort ein.</span>
             )}
+            {locating && <span className="field__hint">Ort wird gesucht …</span>}
+            <LocationPicker
+              coords={
+                typeof form.lat === 'number' && typeof form.lng === 'number'
+                  ? { lat: form.lat, lng: form.lng }
+                  : null
+              }
+              onPick={handlePick}
+            />
           </div>
 
           {/* Datum + Uhrzeit */}

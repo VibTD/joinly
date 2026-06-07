@@ -63,6 +63,7 @@ export default function Profile() {
             <div className="recent-row" key={event.id}>
               <ImagePlaceholder
                 category={event.category}
+                image={event.image}
                 height={48}
                 emojiSize={22}
                 style={{ width: 48 }}

@@ -75,6 +75,7 @@ export default function Discover() {
               <div className="grid-card__media">
                 <ImagePlaceholder
                   category={event.category}
+                  image={event.image}
                   height={130}
                   emojiSize={36}
                 />

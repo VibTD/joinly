@@ -1,22 +1,9 @@
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useApp } from '../context/useApp.js';
-import { CATEGORY_EMOJI, CATEGORY_COLOR, GERMANY_CENTER } from '../data/dummyData.js';
-
-// Bunte Emoji-Pins statt der Standard-Leaflet-Marker (keine Bild-Assets nötig).
-function categoryIcon(category) {
-  const color = CATEGORY_COLOR[category] ?? '#717171';
-  const emoji = CATEGORY_EMOJI[category] ?? '📍';
-  return L.divIcon({
-    className: 'map-pin',
-    html: `<span class="map-pin__dot" style="background:${color}">${emoji}</span>`,
-    iconSize: [34, 34],
-    iconAnchor: [17, 34],
-    popupAnchor: [0, -32],
-  });
-}
+import { CATEGORY_COLOR, GERMANY_CENTER } from '../data/dummyData.js';
+import { categoryIcon } from '../utils/mapPins.js';
 
 // Zentriert die Karte neu, sobald sich der Mittelpunkt ändert (z. B. nach Standortfreigabe).
 function RecenterOnChange({ center, zoom }) {

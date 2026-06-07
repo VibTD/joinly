@@ -1,6 +1,7 @@
 {
   "permissions": {
     "allow": [
+      "Bash(*)",
       "Bash(npm run *)",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Tobias\\\\VS Code Vibe\\\\joinly\" -Recurse -Directory)",
       "Bash(Select-Object FullName)",
@@ -19,7 +20,9 @@
       "Bash(rm -rf test-drive.mjs test-shots dev.log)",
       "Bash(npm uninstall *)",
       "Bash(powershell -Command \"Get-CimInstance Win32_Process -Filter \\\\\"name='node.exe'\\\\\" | Select-Object ProcessId,CommandLine | Format-List\")",
-      "Bash(powershell -Command \"Stop-Process -Id 15468,18488 -Force -ErrorAction SilentlyContinue\")"
+      "Bash(powershell -Command \"Stop-Process -Id 15468,18488 -Force -ErrorAction SilentlyContinue\")",
+      "PowerShell(Get-NetTCPConnection -State Listen | Where-Object { $_.LocalPort -ge 5170 -and $_.LocalPort -le 5190 } | Select-Object LocalPort | Sort-Object LocalPort -Unique)",
+      "PowerShell(Start-Sleep -Seconds 2; Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -eq 5173 } | Select-Object LocalPort, OwningProcess)"
     ]
   }
 }

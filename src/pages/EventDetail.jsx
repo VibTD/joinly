@@ -21,7 +21,7 @@ function participantAvatars(event, count = 6) {
 }
 
 export default function EventDetail() {
-  const { selectedEvent, closeEventDetail, isJoined, toggleJoin } = useApp();
+  const { selectedEvent, closeEventDetail, isJoined, toggleJoin, requestLeave } = useApp();
   const [closing, setClosing] = useState(false);
 
   if (!selectedEvent) return null;
@@ -42,7 +42,7 @@ export default function EventDetail() {
       aria-label={event.name}
     >
       <div className="detail-media">
-        <ImagePlaceholder category={event.category} variant="rounded" height={240} emojiSize={72} />
+        <ImagePlaceholder category={event.category} image={event.image} variant="rounded" height={240} emojiSize={72} />
         <button
           type="button"
           className="detail-close"
@@ -119,7 +119,7 @@ export default function EventDetail() {
         <button
           type="button"
           className={`btn btn--block ${joined ? 'btn--secondary' : 'btn--primary'}`}
-          onClick={() => toggleJoin(event.id)}
+          onClick={() => (joined ? requestLeave(event.id) : toggleJoin(event.id))}
         >
           {joined ? 'Verlassen' : 'Dabei sein'}
         </button>
