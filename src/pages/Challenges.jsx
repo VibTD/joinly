@@ -9,8 +9,8 @@ function OrganizerChallenge({ event, challenge, completed, onToggle }) {
         🎯
       </div>
       <div className="challenge__body">
+        <span className="challenge__event-badge">{event.name}</span>
         <h3 className="challenge__task">{challenge.task}</h3>
-        <p className="challenge__event">{event.name}</p>
         <span className="challenge__reward">🎁 {challenge.reward}</span>
       </div>
       {completed ? (
@@ -32,22 +32,19 @@ function OrganizerChallenge({ event, challenge, completed, onToggle }) {
 }
 
 function FriendChallenge({ challenge, onRespond, completed }) {
-  const done = challenge.status === 'accepted';
-
   return (
     <article className={`card challenge${completed ? ' challenge--done' : ''}`}>
       <div className="challenge__icon" aria-hidden="true">
         {challenge.icon}
       </div>
       <div className="challenge__body">
+        <span className="challenge__event-badge">{challenge.eventName}</span>
         <h3 className="challenge__task">{challenge.task}</h3>
         <div className="challenge__from">
           <span className="avatar-xs" aria-hidden="true">
             {challenge.fromAvatar}
           </span>
-          <span className="challenge__event">
-            Von {challenge.from} · {challenge.eventName}
-          </span>
+          <span className="challenge__event">Von {challenge.from}</span>
         </div>
         <span className="challenge__reward">🎁 {challenge.reward}</span>
 
@@ -77,7 +74,7 @@ function FriendChallenge({ challenge, onRespond, completed }) {
         )}
       </div>
 
-      {done && (
+      {completed && (
         <span className="challenge__check" aria-label="Angenommen">
           <CheckIcon width={14} height={14} />
         </span>
@@ -96,13 +93,24 @@ export default function Challenges() {
   } = useApp();
   const [tab, setTab] = useState('organizer');
 
-  // Veranstalter-Challenges aus allen Events, bei denen der User dabei ist.
-  const organizerChallenges = useMemo(
-    () =>
-      joinedEvents.flatMap((event) =>
-        event.challenges.map((challenge) => ({ event, challenge }))
-      ),
-    [joinedEvents]
+  // Veranstalter-Challenges aus allen Events, bei denen der User dabei ist —
+  // aufgeteilt in offen (zuerst) und erledigt (eigener Abschnitt am Ende).
+  const { openOrganizer, doneOrganizer } = useMemo(() => {
+    const all = joinedEvents.flatMap((event) =>
+      event.challenges.map((challenge) => ({ event, challenge }))
+    );
+    return {
+      openOrganizer: all.filter(({ challenge }) => !isCompleted(challenge.id)),
+      doneOrganizer: all.filter(({ challenge }) => isCompleted(challenge.id)),
+    };
+  }, [joinedEvents, isCompleted]);
+
+  const { openFriends, doneFriends } = useMemo(
+    () => ({
+      openFriends: friendChallenges.filter((c) => c.status !== 'accepted'),
+      doneFriends: friendChallenges.filter((c) => c.status === 'accepted'),
+    }),
+    [friendChallenges]
   );
 
   const pendingFriendCount = friendChallenges.filter(
@@ -141,7 +149,7 @@ export default function Challenges() {
 
       <div style={{ marginTop: 16 }}>
         {tab === 'organizer' &&
-          (organizerChallenges.length === 0 ? (
+          (openOrganizer.length === 0 && doneOrganizer.length === 0 ? (
             <div className="empty">
               <div className="empty__emoji">🎯</div>
               <p className="empty__title">Keine Challenges</p>
@@ -150,19 +158,36 @@ export default function Challenges() {
               </p>
             </div>
           ) : (
-            organizerChallenges.map(({ event, challenge }) => (
-              <OrganizerChallenge
-                key={challenge.id}
-                event={event}
-                challenge={challenge}
-                completed={isCompleted(challenge.id)}
-                onToggle={() => toggleChallenge(challenge.id)}
-              />
-            ))
+            <>
+              {openOrganizer.map(({ event, challenge }) => (
+                <OrganizerChallenge
+                  key={challenge.id}
+                  event={event}
+                  challenge={challenge}
+                  completed={false}
+                  onToggle={() => toggleChallenge(challenge.id)}
+                />
+              ))}
+
+              {doneOrganizer.length > 0 && (
+                <>
+                  <div className="divider-label">Erledigt</div>
+                  {doneOrganizer.map(({ event, challenge }) => (
+                    <OrganizerChallenge
+                      key={challenge.id}
+                      event={event}
+                      challenge={challenge}
+                      completed
+                      onToggle={() => toggleChallenge(challenge.id)}
+                    />
+                  ))}
+                </>
+              )}
+            </>
           ))}
 
         {tab === 'friends' &&
-          (friendChallenges.length === 0 ? (
+          (openFriends.length === 0 && doneFriends.length === 0 ? (
             <div className="empty">
               <div className="empty__emoji">🤝</div>
               <p className="empty__title">Keine Einladungen</p>
@@ -171,14 +196,30 @@ export default function Challenges() {
               </p>
             </div>
           ) : (
-            friendChallenges.map((challenge) => (
-              <FriendChallenge
-                key={challenge.id}
-                challenge={challenge}
-                onRespond={respondToFriendChallenge}
-                completed={challenge.status === 'accepted'}
-              />
-            ))
+            <>
+              {openFriends.map((challenge) => (
+                <FriendChallenge
+                  key={challenge.id}
+                  challenge={challenge}
+                  onRespond={respondToFriendChallenge}
+                  completed={false}
+                />
+              ))}
+
+              {doneFriends.length > 0 && (
+                <>
+                  <div className="divider-label">Erledigt</div>
+                  {doneFriends.map((challenge) => (
+                    <FriendChallenge
+                      key={challenge.id}
+                      challenge={challenge}
+                      onRespond={respondToFriendChallenge}
+                      completed
+                    />
+                  ))}
+                </>
+              )}
+            </>
           ))}
       </div>
     </div>

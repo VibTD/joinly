@@ -5,6 +5,7 @@ import {
   friendChallenges as initialFriendChallenges,
   initialJoinedEventIds,
   initialCompletedChallengeIds,
+  user as initialUser,
 } from '../data/dummyData.js';
 import { AppContext } from './useApp.js';
 
@@ -24,6 +25,8 @@ let createdSeq = 0;
 export function AppProvider({ children }) {
   const [activePage, setActivePage] = useState('home');
   const [isCreateOpen, setCreateOpen] = useState(false);
+  const [profile, setProfile] = useState(initialUser);
+  const [selectedEventId, setSelectedEventId] = useState(null);
   const [events, setEvents] = useState(initialEvents);
   const [joinedEventIds, setJoinedEventIds] = useState(initialJoinedEventIds);
   const [completedChallengeIds, setCompletedChallengeIds] = useState(
@@ -89,6 +92,9 @@ export function AppProvider({ children }) {
     }, {});
     const joinedEvents = events.filter((e) => joinedEventIds.includes(e.id));
 
+    const updateProfile = (data) =>
+      setProfile((prev) => ({ ...prev, ...data }));
+
     return {
       events,
       eventsById,
@@ -108,6 +114,11 @@ export function AppProvider({ children }) {
       isCreateOpen,
       openCreate: () => setCreateOpen(true),
       closeCreate: () => setCreateOpen(false),
+      profile,
+      updateProfile,
+      selectedEvent: selectedEventId ? eventsById[selectedEventId] : null,
+      openEventDetail: (eventId) => setSelectedEventId(eventId),
+      closeEventDetail: () => setSelectedEventId(null),
     };
   }, [
     events,
@@ -116,6 +127,8 @@ export function AppProvider({ children }) {
     friendChallenges,
     activePage,
     isCreateOpen,
+    profile,
+    selectedEventId,
   ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

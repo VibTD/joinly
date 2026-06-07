@@ -7,7 +7,7 @@ import HeaderActions from '../components/HeaderActions.jsx';
 import { SearchIcon, UsersIcon } from '../components/Icons.jsx';
 
 export default function Discover() {
-  const { events } = useApp();
+  const { events, openEventDetail } = useApp();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('Alle');
 
@@ -65,7 +65,13 @@ export default function Discover() {
       ) : (
         <div className="grid">
           {results.map((event) => (
-            <article key={event.id} className="grid-card">
+            <article
+              key={event.id}
+              className="grid-card grid-card--clickable"
+              onClick={() => openEventDetail(event.id)}
+              role="button"
+              tabIndex={0}
+            >
               <div className="grid-card__media">
                 <ImagePlaceholder
                   category={event.category}

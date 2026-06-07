@@ -5,11 +5,17 @@ import { PinIcon, UsersIcon, LockIcon } from './Icons.jsx';
 
 // Volle Event-Karte (Home-Feed): Bild, Badge, Name, Ort, Teilnehmer, Button.
 export default function EventCard({ event }) {
-  const { isJoined, toggleJoin } = useApp();
+  const { isJoined, toggleJoin, openEventDetail } = useApp();
   const joined = isJoined(event.id);
 
   return (
-    <article className="card">
+    <article
+      className="card card--clickable"
+      onClick={() => openEventDetail(event.id)}
+      role="button"
+      tabIndex={0}
+    >
+
       <div className="event-card__media">
         <ImagePlaceholder category={event.category} variant="top" height={180} />
         <div className="event-card__badge">
@@ -39,7 +45,10 @@ export default function EventCard({ event }) {
           <button
             type="button"
             className={`btn btn--sm ${joined ? 'btn--joined' : 'btn--primary'}`}
-            onClick={() => toggleJoin(event.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleJoin(event.id);
+            }}
           >
             {joined ? '✓ Dabei' : 'Dabei sein'}
           </button>

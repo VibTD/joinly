@@ -1,10 +1,9 @@
 import { useApp } from '../context/useApp.js';
-import { user } from '../data/dummyData.js';
 import { PlusIcon } from './Icons.jsx';
 
 // Oben rechts auf Home & Discover: runder "+"-Button + klickbarer Avatar.
 export default function HeaderActions() {
-  const { openCreate, setActivePage } = useApp();
+  const { openCreate, setActivePage, profile } = useApp();
   return (
     <div className="header-actions">
       <button
@@ -21,7 +20,7 @@ export default function HeaderActions() {
         onClick={() => setActivePage('profile')}
         aria-label="Zum Profil"
       >
-        <span aria-hidden="true">{user.avatar}</span>
+        <span aria-hidden="true">{profile.avatar}</span>
       </button>
     </div>
   );

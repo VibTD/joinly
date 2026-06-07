@@ -1,6 +1,7 @@
 import {
   HomeIcon,
   SearchIcon,
+  MapIcon,
   CalendarIcon,
   TrophyIcon,
   UserIcon,
@@ -9,7 +10,8 @@ import {
 const NAV_ITEMS = [
   { key: 'home', label: 'Home', Icon: HomeIcon },
   { key: 'discover', label: 'Entdecken', Icon: SearchIcon },
-  { key: 'events', label: 'Events', Icon: CalendarIcon },
+  { key: 'map', label: 'Karte', Icon: MapIcon },
+  { key: 'events', label: 'Meine Events', Icon: CalendarIcon },
   { key: 'challenges', label: 'Challenges', Icon: TrophyIcon },
   { key: 'profile', label: 'Profil', Icon: UserIcon },
 ];

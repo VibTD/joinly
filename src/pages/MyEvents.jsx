@@ -5,7 +5,7 @@ import ProgressBar from '../components/ProgressBar.jsx';
 import { CheckIcon } from '../components/Icons.jsx';
 
 export default function MyEvents() {
-  const { joinedEvents, isCompleted, toggleChallenge } = useApp();
+  const { joinedEvents, isCompleted, toggleChallenge, openEventDetail } = useApp();
 
   return (
     <div className="app-main">
@@ -32,7 +32,12 @@ export default function MyEvents() {
 
           return (
             <article key={event.id} className="card my-event">
-              <div className="my-event__head">
+              <div
+                className="my-event__head my-event__head--clickable"
+                onClick={() => openEventDetail(event.id)}
+                role="button"
+                tabIndex={0}
+              >
                 <ImagePlaceholder
                   category={event.category}
                   height={56}

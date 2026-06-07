@@ -121,6 +121,15 @@ export function GlobeIcon(props) {
   );
 }
 
+export function MapIcon(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6l-6-2Z" />
+      <path d="M9 4v14M15 6v14" />
+    </svg>
+  );
+}
+
 export function LockIcon(props) {
   return (
     <svg {...base} width={16} height={16} {...props}>

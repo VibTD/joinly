@@ -1309,3 +1309,321 @@ img {
     transform: scale(1);
   }
 }
+
+/* --------------------------------------------------------------------------
+   Home — "Meine Events" / "Entdecken" Toggle-Tabs
+   -------------------------------------------------------------------------- */
+
+.toggle-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.toggle-tab {
+  flex: 1;
+  position: relative;
+  padding: 12px 0;
+  text-align: center;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-button);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.toggle-tab--active {
+  color: var(--color-primary);
+  background: rgba(255, 56, 92, 0.08);
+}
+
+.toggle-tab--active::after {
+  content: '';
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 4px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Klickbare Karten -> Event-Detailseite
+   -------------------------------------------------------------------------- */
+
+.card--clickable,
+.grid-card--clickable,
+.my-event__head--clickable {
+  cursor: pointer;
+}
+
+.card--clickable:active {
+  transform: scale(0.99);
+}
+
+.my-event__head--clickable {
+  border-radius: var(--radius-card);
+  transition: background 0.15s ease;
+}
+
+.my-event__head--clickable:hover {
+  background: var(--color-surface);
+}
+
+/* --------------------------------------------------------------------------
+   Event-Detailseite — Vollseite, Slide-in von rechts
+   -------------------------------------------------------------------------- */
+
+.detail-sheet {
+  position: fixed;
+  left: 50%;
+  top: 0;
+  width: 100%;
+  max-width: var(--max-width);
+  height: 100%;
+  background: var(--color-bg);
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  transform: translateX(-50%);
+  animation: detail-in 0.3s ease;
+}
+
+.detail-sheet--closing {
+  animation: detail-out 0.3s ease forwards;
+}
+
+@keyframes detail-in {
+  from {
+    transform: translateX(calc(-50% + 100%));
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes detail-out {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(calc(-50% + 100%));
+  }
+}
+
+.detail-media {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.detail-close {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  box-shadow: var(--shadow-card);
+  display: grid;
+  place-items: center;
+  color: var(--color-text);
+}
+
+.detail-close:hover {
+  background: #fff;
+}
+
+.detail-body {
+  flex: 1;
+  padding: 20px;
+  padding-bottom: 100px;
+}
+
+.detail-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.detail-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.detail-badges .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.detail-desc {
+  margin-top: 16px;
+  font-size: var(--fs-body);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+.detail-meta-list {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.detail-meta-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-body);
+  color: var(--color-text);
+}
+
+.detail-meta-list li svg {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.detail-avatars {
+  margin-top: 12px;
+  display: flex;
+}
+
+.detail-avatars__item {
+  width: 34px;
+  height: 34px;
+  font-size: 16px;
+  margin-left: -8px;
+  border: 2px solid var(--color-bg);
+}
+
+.detail-avatars__item:first-child {
+  margin-left: 0;
+}
+
+.detail-footer {
+  position: sticky;
+  bottom: 0;
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Karte (OpenStreetMap via leaflet)
+   -------------------------------------------------------------------------- */
+
+.app-main--map {
+  display: flex;
+  flex-direction: column;
+}
+
+.map-frame {
+  margin-top: 8px;
+  height: 56vh;
+  min-height: 320px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.map-pin {
+  background: transparent;
+  border: none;
+}
+
+.map-pin__dot {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: var(--shadow-card);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.map-popup {
+  min-width: 160px;
+  text-align: center;
+  padding: 2px;
+}
+
+.map-popup__title {
+  font-size: var(--fs-body);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.map-popup__date {
+  margin-top: 2px;
+  margin-bottom: 10px;
+  font-size: var(--fs-label);
+  color: var(--color-text-secondary);
+}
+
+.map-legend {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.map-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-label);
+  color: var(--color-text-secondary);
+}
+
+.map-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Challenges — Event-Badge auf Karten + "Erledigt"-Trenner
+   -------------------------------------------------------------------------- */
+
+.challenge__event-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 6px;
+}
+
+.divider-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 14px;
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.divider-label::before,
+.divider-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}

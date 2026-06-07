@@ -1,36 +1,40 @@
+import { useState } from 'react';
 import { useApp } from '../context/useApp.js';
-import { user } from '../data/dummyData.js';
 import ImagePlaceholder from '../components/ImagePlaceholder.jsx';
+import EditProfileModal from '../components/EditProfileModal.jsx';
 
 export default function Profile() {
-  const { joinedEvents, completedChallengeIds } = useApp();
+  const { profile, joinedEvents, completedChallengeIds } = useApp();
+  const [editOpen, setEditOpen] = useState(false);
 
   // Stats teils dynamisch (live mit dem App-State), teils aus den Dummy-Daten.
   const stats = [
-    { value: joinedEvents.length || user.stats.events, label: 'Events dabei' },
+    { value: joinedEvents.length || profile.stats.events, label: 'Events dabei' },
     {
       value: completedChallengeIds.length,
       label: 'Challenges erledigt',
     },
-    { value: user.stats.points.toLocaleString('de-DE'), label: 'Punkte' },
+    { value: profile.stats.points.toLocaleString('de-DE'), label: 'Punkte' },
   ];
 
   const recent = joinedEvents.slice(0, 4);
+  const fullName = `${profile.firstName} ${profile.lastName}`.trim();
 
   return (
     <div className="app-main">
       <header className="profile-head">
         <div className="profile-head__avatar" aria-hidden="true">
-          {user.avatar}
+          {profile.avatar}
         </div>
-        <h1 className="profile-head__name">{user.name}</h1>
-        <p className="profile-head__handle">{user.handle}</p>
-        <p className="profile-head__bio">{user.bio}</p>
+        <h1 className="profile-head__name">{fullName}</h1>
+        <p className="profile-head__handle">@{profile.username}</p>
+        <p className="profile-head__bio">{profile.bio}</p>
 
         <button
           type="button"
           className="btn btn--secondary btn--sm"
           style={{ marginTop: 16 }}
+          onClick={() => setEditOpen(true)}
         >
           Profil bearbeiten
         </button>
@@ -73,6 +77,8 @@ export default function Profile() {
           ))}
         </div>
       )}
+
+      {editOpen && <EditProfileModal onClose={() => setEditOpen(false)} />}
     </div>
   );
 }
